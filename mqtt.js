@@ -6,18 +6,18 @@ const args = cli.args;
 const mqttOptions = {
     username: args.mqttuser,
     password: args.mqttpass,
-    clientId: `nodeJBD_${Math.random().toString(16).substr(2,8)}`    
+    clientId: `nodeJKBMS_${Math.random().toString(16).substr(2,8)}`    
 };
 
 module.exports = {
-    publish: async function(data, subTopic) {
+    publish: async function(packData, cellData) {
         try {
             logger.trace('Connecting to MQTT broker...');
-            logger.trace(mqttOptions, 'With MQTT options...');
             const client = await mqtt.connectAsync(`tcp://${args.mqttbroker}`, mqttOptions)
-            logger.trace('Publishing data to MQTT...');
-            await client.publish(`${args.mqtttopic}/${subTopic}`, JSON.stringify(data));
+            await client.publish(`${args.mqtttopic}/pack`, JSON.stringify(packData));
+            await client.publish(`${args.mqtttopic}/cells`, JSON.stringify(cellData));
             await client.end();
+			logger.trace('Data sent to MQTT broker...');
         } catch (e){
             logger.error(e);
         }

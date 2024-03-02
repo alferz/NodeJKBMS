@@ -1,55 +1,68 @@
-# NodeJBD
+# NodeJKBMS
 
-Utility to retrieve data from JBD/Overkill Solar BMS units and publish it to MQTT, written in NodeJS, Based on [NodeRenogy](https://github.com/mickwheelz/NodeRenogy).
+Utility to retrieve data from JK (JiKong/Heltec/Hankzor) BMS units and publish it to MQTT, written in NodeJS.
 
-Data can then be surfaced in Home Assistant, or anything else that can read from a MQTT bus.
+Data can then be polled/displayed in Node-RED, Home Assistant, or anything else that can read from a MQTT bus.
 
-**NOTE:** This software provides *read-only* access to your BMS, intended for publshing information to Home Assistant, Grafana, or similar. You can not change any BMS parameters with this software.
+**NOTE:** This software provides *read-only* access to your BMS, intended for publshing information to Node-Red, Home Assistant, Grafana, or similar. You can not change any BMS parameters with this software. Additionally current JKBMS units do not support writing most parameters using the GPS/TTL/RS-485 port at manufacturer discretion.
 
 This software is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Thanks
 
+Sophie Wheeler (@sophienyaa) for her excellent [NodeJBD](https://github.com/sophienyaa/NodeJBD) project on which this software is based and forked. 
+
 Eric Poulsen for his [bms-tools](https://gitlab.com/bms-tools/bms-tools/-/tree/master) and [documation](https://gitlab.com/bms-tools/bms-tools/-/blob/master/JBD_REGISTER_MAP.md).
 
-Overkill Solar for their [extensive docuentation](https://overkillsolar.com/support-downloads/) and [Arduino library](https://github.com/FurTrader/Overkill-Solar-BMS-Arduino-Library)
+Overkill Solar for their [extensive docuentation](https://overkillsolar.com/support-downloads/) and [Arduino library](https://github.com/FurTrader/Overkill-Solar-BMS-Arduino-Library).
 
 ## Compatibility
 
-See below table, in theory this should work with any size JBD/Overkill Solar BMS solar, but the below have been tested.
-If you have success with one not listed here, please let me know by raising an issue!
+See below table, in theory this should work with any current JK BMS, but the below have been tested.
+If you have success with one not listed here, please let me know by sending a message or submitting an issue!
 
-|BMS Model|Interface|Notes|Status|
-|----------|---------|-----|------|
-|JBD SP04S28A4S|UART|100A 4s LiFePO4 BMS|✅|
+|BMS Model|Interface|HW Version|Notes|Status|
+|----------|---------|-----|------|------|
+|JK B2A8S20P|GPS (TTL or RSS-485)|v11+|200A 8s 2A Active Balance BMS|✅|
 
-## Supported Registers
 
-**TODO:** For now, check out Eric Poulsen's documenation [here](https://gitlab.com/bms-tools/bms-tools/-/blob/master/JBD_REGISTER_MAP.md)
+## Compatibility Notes
+
+The JK BMS uses a 4-pin GPS port to communicate. Earlier versions (prior to hardware version 11) may have a different configuration, let me know if you have an earlier version that works the same way. The GPS port natively supports the TTL serial communication protocol at 115200 baud rate, and therefore a USB-TTL adapter is often the simplest way to communicate with the BMS. JK/Heltec/Hankzor also sell an "RS-485" adapter, which appears to convert the TTL output on the GPS port to RS-485 -- this configuration is currently untested, again please let me know if you are able to use this software with RS-485. 
+
+## Compatibility with Node-JBD
+
+This fork of Node-JBD was created with MQTT compatibility for existing applications that rely on Node-JBD to supply data over the MQTT message queue. As a result every effort was made to match Node-JBD's parameter naming wherever possible. If you find a compatibility problem please submit an issue.
+
+
+## Supported BMS Read Parameters 
+
+This software implements the protocol released by JiKong/NEEY and currently stored at diysolarforum.com in the [resources section](https://diysolarforum.com/resources/jk-bms-documentation-on-protocols-provided-by-hankzor.259/). This software supports reading many of the parameters specified in the protocol document and displaying them to console or publishing them to MQTT. Despite what is written in the protocol document, the JK BMS does not currently support writing paramaters such as under-voltage protection and similar settings, and writing any parameter is not supported by this software. 
 
 ## Connecting your BMS
 
-The BMS has a UART port, this is a 5v TTL serial connection and can easily be connected to most machines either via a USB > UART adapter
+The JK BMS uses a 4-pin GPS port for communication. This port natively uses the TTL serial communication protocol at 115200 baud rate. The pinout is shown below. Note that the vout PIN is supplying full pack voltage (ie, 27v or 52v) which will easily destroy your USB-TTL adapter. It is likely not needed anyway so I recommend not connecting vout to anything. Your USB-TTL adapter should be powered by the USB port and wont need another voltage source.
 
-If you are using a Raspberry Pi or similar, you may be able to connect to the UART pins on the board however you will likely need a logic level converter.
+You will need to connect RXD, TXD and GND to your USB-TTL device in order for it to work. If you use the JiKong provided TTL to RS-485 adapter, you will then need a generic USB to RS-485 adapter as well which typically runs at 9600 baud (you will need to use the --baudrate option). Using a USB-TTL adapter means you only need one adapter and is probably the preferred communication method.  
 
-I am using a CP2102 based USB > UART adapter for my application.
-
-You will need to connect TX, RX and GND to your device in order for it to work.
-
-**NOTE:** The UART port has 4 pins, GND, TX, RX and VCC. I have seen reports of VCC putting out ~10v so I would **NOT** connect anything to VCC (or at least test it first!)
-
-**TODO:** Add diagram/photos of UART connection.
+<pre>
+<--------TOP OF BMS ---------->    
+<TEMP port>    <3-pin port>    <GPS Port>
+                               < o o o o >
+                                 | | | |
+                                /  | | \--- GND
+                vout (28v!)----/   | |         
+                                  /   \---  TXD (3.3v)
+                     RXD (3.3v)--/
+</pre>
 
 ## Using the utility
 
-Ideally you would install/run this on a device that is connected to your BMS all the time. I use a Raspberry Pi Zero W, which is more than powerful enough for this use case. 
+Ideally you would install/run this on a device that is connected to your BMS all the time. I use a Raspberry Pi 4, which is more than powerful enough for this use case. 
 
 This also assumes you have a MQTT broker setup and running already. If you don't want to use MQTT you can output the results to the console. Support for other output methods may come at a later date.
 
 You will first need to ensure you have NodeJS v16+ installed on your device.
-
-**NOTE**: If you installed a version of node with `apt-get` on your Pi Zero, please un-install it before installing Node v16.
 
 The Pi Zero/One doesn't have official support for newer version of NodeJS, so follow the instructions [here](https://hassancorrigan.com/blog/install-nodejs-on-a-raspberry-pi-zero/) to get it installed.
 
@@ -61,11 +74,11 @@ Once you've got NodeJS installed, then follow the below instructions.
 
 1. Clone this repository (or download it) by running;
 
-`git clone https://github.com/mickwheelz/NodeJBD.git`
+`git clone https://github.com/alferz/NodeJKBMS.git`
 
-2. Change to the `NodeJBD` directory and install the dependencies by running the below commands
+2. Change to the `NodeJKBMS` directory and install the dependencies by running the below commands
 
- - Change to the directory you cloned the code into: `cd NodeJBD`
+ - Change to the directory you cloned the code into: `cd NodeJKBMS`
  - Run installer: `npm install` 
  - Link command: `sudo npm link`
 
@@ -73,24 +86,24 @@ Once you've got NodeJS installed, then follow the below instructions.
 
 Basic Example:
 
-`node-jbd -s /dev/ttyUSB0 -m 192.168.0.10`
+`node-jkbms -s /dev/ttyUSB0 -m 192.168.0.10`
 
-This would use serial port `/dev/ttyUSB0` and connect to MQTT Broker at `192.168.0.10` with no user/password, publishing to the `NodeJBD/pack` and `NodeJBD/cells` topics every 10s.
+This would use serial port `/dev/ttyUSB0` and connect to MQTT Broker at `192.168.0.10` with no user/password, publishing to the `NodeJKBMS/pack` and `NodeJKBMS/cells` topics every 10s.
 
 The utility supports using different polling intervals and topics, as well as MQTT brokers that need authentication, please see below for a full list of options.
 
-These options can also be passed as environment variables, by appending `NODEJBD_` to the argument (e.g. `NODEJBD_SERIALPORT=/dev/ttyUSB0`). This is useful when running as a service (see below section).
+These options can also be passed as environment variables, by appending `NODEJKBMS_` to the argument (e.g. `NODEJKBMS_SERIALPORT=/dev/ttyUSB0`). This is useful when running as a service (see below section).
 
 |Argument |Alias |Env Var|Description | Example |
 |---------|------|----------|-----|----|
-|--serialport|-s|NODEJBD_SERIALPORT|REQUIRED: Serial port your BMS is connected to|-s /dev/ttyUSB0|
-|--baudrate|-b|NODEJBD_BAUDRATE|The baud rate to use for serial communications, defaults to 9600|-b 14400|
-|--mqttbroker|-m|NODEJBD_MQTTBROKER|The address of your MQTT Broker|-m 192.168.0.10|
-|--mqttuser|-u|NODEJBD_MQTTUSER|The username for your MQTT Broker|-u mqttUser|
-|--mqttpass|-p|NODEJBD_MQTTPASS|The password for your MQTT Broker|-p mqttPass| 
-|--mqtttopic|-t|NODEJBD_MQTTTOPIC|MQTT topic to publish to defaults to 'NodeJBD'|-t MyTopic|
-|--pollinginterval|-i|NODEJBD_POLLINGINTERVAL|How frequently to poll the controller in seconds, defaults to 10|-i 60|
-|--loglevel|-l|NODEJBD_LOGLEVEL|Sets the logging level, useful for debugging|-l trace|   
+|--serialport|-s|NODEJKBMS_SERIALPORT|REQUIRED: Serial port your BMS is connected to|-s /dev/ttyUSB0|
+|--baudrate|-b|NODEJKBMS_BAUDRATE|The baud rate to use for serial communications, defaults to 115200|-b 9600|
+|--mqttbroker|-m|NODEJKBMS_MQTTBROKER|The address of your MQTT Broker|-m 192.168.0.10|
+|--mqttuser|-u|NODEJKBMS_MQTTUSER|The username for your MQTT Broker|-u mqttUser|
+|--mqttpass|-p|NODEJKBMS_MQTTPASS|The password for your MQTT Broker|-p mqttPass| 
+|--mqtttopic|-t|NODEJKBMS_MQTTTOPIC|MQTT topic to publish to defaults to 'NodeJKBMS'|-t MyTopic|
+|--pollinginterval|-i|NODEJKBMS_POLLINGINTERVAL|How frequently to poll the controller in seconds, defaults to 10|-i 60|
+|--loglevel|-l|NODEJKBMS_LOGLEVEL|Sets the logging level, useful for debugging|-l trace|   
 |--help|-h||Show help ||
 |--version|||Show version number|  |    
 
@@ -105,10 +118,10 @@ These instructions are for Rasbpbian, but should work on any Debian based distro
 Example:
 ```
 [Unit]
-Description=NodeJBD Service
+Description=NodeJKBMS Service
 
 [Service]
-ExecStart=node-jbd
+ExecStart=node-jkbms
 Restart=always
 User=pi
 Group=pi
@@ -116,28 +129,28 @@ Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
 Environment=NODEJBD_SERIALPORT=/dev/ttyUSB0
 Environment=NODEJBD_MQTTBROKER=192.168.0.10
-WorkingDirectory=/home/pi/NodeJBD
+WorkingDirectory=/home/pi/NodeJKBMS
 
 [Install]
 WantedBy=multi-user.target
 ```
 Note the `Environment=...` lines, set any configuration options here such as serial port, MQTT broker, interval, etc.
 
-2. Name this file `nodejbd.service` and save it in `/etc/systemd/system`
+2. Name this file `nodejkbms.service` and save it in `/etc/systemd/system`
 
 3. Run the following commands:
 
- - To start the service: `systemctl start nodejbd`
+ - To start the service: `systemctl start nodejkbms`
 
- - To check the logs/ensure its running: `journalctl -u nodejbd`
+ - To check the logs/ensure its running: `journalctl -u nodejkbms`
 
- - To enable the service to run at startup: `systemctl enable nodejbd`
+ - To enable the service to run at startup: `systemctl enable nodejkbms`
 
 ## Publishing to MQTT
 
-The utility will publish one topic, with two subtopics on your MQTT Broker. You specify the topic name in the configuration with the default being `NodeJBD`
+The utility will publish one topic, with two subtopics on your MQTT Broker. You specify the topic name in the configuration with the default being `NodeJKBMS`
 
-The first subtopic is `<topic>/pack`. This is published at the set interval and contains all the information about your pack. This contains the data from Register 0x03
+The first subtopic is `<topic>/pack`. This is published at the set interval and contains all the information about your pack. 
 
 Example:
 ```json
@@ -196,7 +209,7 @@ Example:
 }
 ```
 
-The second is `<topic>/cells` This is published at the set interval and contains the voltages of your individual cells. This contains the data from register 0x04
+The second is `<topic>/cells` This is published at the set interval and contains the voltages of your individual cells. 
 
 Example:
 ```json
@@ -208,32 +221,15 @@ Example:
     "cell2mV":3324,
     "cell2V":3.32,
     "cell3mV":3325,
-    "cell3V":3.33
+    "cell3V":3.33,
+	"cell4mV":3323,
+    "cell4V":3.32,
+    "cell5mV":3326,
+    "cell5V":3.33,
+    "cell6mV":3324,
+    "cell6V":3.32,
+    "cell7mV":3325,
+    "cell7V":3.33
 }
 ```
-You can then subscribe the topics with a MQTT client and data as you wish. An example of this would be surfacing it in Home Assistant. See below for more information on how to do that.
-
-## Getting data into Home Assistant
-
-The values can be displayed in Home Assistant by adding them as [sensors](https://www.home-assistant.io/integrations/sensor.mqtt/) in the `configuration.yaml` files. 
-
-Essentially you just need to extract the values from the JSON payload published to MQTT. For each value you want to use in Home Assistant, add a MQTT sensor entry in your config file.
-
-See below for some examples:
-
-```yaml
-sensor:
-- platform: mqtt
-    name: "Current Battery State of Charge"
-    state_topic: "NodeJBD/pack"
-    value_template: "{{ value_json['packSOC'] }}"
-    unit_of_measurement: "%"
-    device_class: battery
-
-- platform: mqtt
-    name: "Cell0 Voltage"
-    state_topic: "NodeJBD/cells"
-    value_template: "{{ value_json['battV'] }}"
-    unit_of_measurement: "V"
-    device_class: battery
-```
+You can then subscribe the topics with a MQTT client and data as you wish. An example of this would be surfacing it in Home Assistant or a custom Node-RED application. 
