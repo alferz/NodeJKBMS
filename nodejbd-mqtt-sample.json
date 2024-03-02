@@ -1,0 +1,92 @@
+{
+    "packV": "26.31",
+    "packA": "0.00",
+    "packBalCap": "115.82",
+    "packRateCap": "248.00",
+    "packCycles": 13,
+    "packNumberOfCells": 8,
+    "balanceStatus": [{
+            "cell0": false
+        }, {
+            "cell1": false
+        }, {
+            "cell2": false
+        }, {
+            "cell3": false
+        }, {
+            "cell4": false
+        }, {
+            "cell5": false
+        }, {
+            "cell6": false
+        }, {
+            "cell7": false
+        }
+    ],
+    "balanceStatusHigh": [{
+            "cell0": false
+        }, {
+            "cell1": false
+        }, {
+            "cell2": false
+        }, {
+            "cell3": false
+        }, {
+            "cell4": false
+        }, {
+            "cell5": false
+        }, {
+            "cell6": false
+        }, {
+            "cell7": false
+        }
+    ],
+    "protectionStatus": {
+        "singleCellOvervolt": false,
+        "singleCellUndervolt": false,
+        "packOvervolt": false,
+        "packUndervolt": false,
+        "chargeOvertemp": false,
+        "chargeUndertemp": false,
+        "dischargeOvertemp": false,
+        "dischargeUndertemp": false,
+        "chargeOvercurrent": false,
+        "dischargeOvercurrent": false,
+        "shortCircut": false,
+        "frontEndDetectionICError": false,
+        "softwareLockMOS": false
+    },
+    "bmsSWVersion": 37,
+    "packSOC": 47,
+    "FETStatus": {
+        "charging": true,
+        "discharging": true
+    },
+    "tempSensorCount": 3,
+    "tempSensorValues": {
+        "NTC0": "35.15",
+        "NTC1": "33.15",
+        "NTC2": "33.05"
+    }
+}
+
+
+
+{
+    "cell0mV": 3290,
+    "cell0V": "3.29",
+    "cell1mV": 3288,
+    "cell1V": "3.29",
+    "cell2mV": 3288,
+    "cell2V": "3.29",
+    "cell3mV": 3291,
+    "cell3V": "3.29",
+    "cell4mV": 3289,
+    "cell4V": "3.29",
+    "cell5mV": 3287,
+    "cell5V": "3.29",
+    "cell6mV": 3289,
+    "cell6V": "3.29",
+    "cell7mV": 3291,
+    "cell7V": "3.29"
+}

@@ -8,9 +8,9 @@ const argv = yargs
     })
     .option('baudrate', {
         alias: 'b',
-        description: 'The baud rate to use for serial communications, defaults to 9600 (e.g -b 14400)',
+        description: 'The baud rate to use for serial communications, defaults to 115200 (e.g -b 9600)',
         type: 'integer',
-        default: 9600
+        default: 115200
     })
     .option('mqttbroker', {
         alias: 'm',
@@ -29,9 +29,9 @@ const argv = yargs
     })
     .option('mqtttopic', {
         alias: 't',
-        description: 'MQTT topic to publish to defaults to \'NodeJBD\' (e.g -t MyTopic)',
+        description: 'MQTT topic to publish to defaults to \'NodeJKBMS\' (e.g -t MyTopic)',
         type: 'string',
-        default: 'NodeJBD'
+        default: 'NodeJKBMS'
     })
     .option('pollinginterval', {
         alias: 'i',
@@ -41,15 +41,15 @@ const argv = yargs
     })
     .option('loglevel', {
         alias: 'l',
-        description: 'Logging level to use, values are trace, debug, info, warn, error, fatal. Defaults to error',
+        description: 'Logging level to use, values are trace, debug, info, warn, error, fatal. Defaults to info',
         type: 'string',
         default: 'info'
     })
     .choices('loglevel', ['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
     .help()
     .alias('help', 'h')
-    .epilogue('For more information, check out the project repository at https://github.com/mickwheelz/NodeJBD')
-    .env('NODEJBD')
+    .epilogue('For more information, check out the project repository at https://github.com/alferz/NodeJKBMS')
+    .env('NODEJKBMS')
     .demandOption('serialport', 'You must specify a serial port')
     .wrap(yargs.terminalWidth())
     .argv;
