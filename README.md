@@ -22,7 +22,7 @@ See below table, in theory this should work with any current JK BMS, but the bel
 If you have success with one not listed here, please let me know by sending a message or submitting an issue!
 
 |BMS Model|Interface|HW Version|Notes|Status|
-|----------|---------|-----|------|
+|----------|---------|-----|------|------|
 |JK B2A8S20P|GPS (TTL or RSS-485)|v11+|200A 8s 2A Active Balance BMS|✅|
 
 
