@@ -45,7 +45,7 @@ The JK BMS uses a 4-pin GPS port for communication. This port natively uses the 
 
 You will need to connect RXD, TXD and GND to your USB-TTL device in order for it to work. If you use the JiKong provided TTL to RS-485 adapter, you will then need a generic USB to RS-485 adapter as well which typically runs at 9600 baud (you will need to use the --baudrate option). Using a USB-TTL adapter means you only need one adapter and is probably the preferred communication method.  
 
-
+<pre>
 <--------TOP OF BMS ---------->    
 <TEMP port>    <3-pin port>    <GPS Port>
                                < o o o o >
@@ -54,7 +54,7 @@ You will need to connect RXD, TXD and GND to your USB-TTL device in order for it
                 vout (28v!)----/   | |         
                                   /   \---  TXD (3.3v)
                      RXD (3.3v)--/
-
+</pre>
 
 ## Using the utility
 
